@@ -1,0 +1,86 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "xas2@0.0.5",
+        "scope": null,
+        "escapedName": "xas2",
+        "name": "xas2",
+        "rawSpec": "0.0.5",
+        "spec": "0.0.5",
+        "type": "version"
+      },
+      "/var/www"
+    ]
+  ],
+  "_from": "xas2@0.0.5",
+  "_id": "xas2@0.0.5",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/xas2",
+  "_nodeVersion": "6.6.0",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/xas2-0.0.5.tgz_1477311243256_0.08790191658772528"
+  },
+  "_npmUser": {
+    "name": "jvickers",
+    "email": "james@metabench.com"
+  },
+  "_npmVersion": "3.4.1",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "xas2@0.0.5",
+    "scope": null,
+    "escapedName": "xas2",
+    "name": "xas2",
+    "rawSpec": "0.0.5",
+    "spec": "0.0.5",
+    "type": "version"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/xas2/-/xas2-0.0.5.tgz",
+  "_shasum": "ba11342a7e6437907c991a514468cb02ce3cde9c",
+  "_shrinkwrap": null,
+  "_spec": "xas2@0.0.5",
+  "_where": "/var/www",
+  "author": {
+    "name": "James Vickers",
+    "email": "james@metabench.com"
+  },
+  "bugs": {
+    "url": "https://github.com/metabench/xas2/issues"
+  },
+  "dependencies": {},
+  "description": "JavaScript - XAS2 Extended Address Space - Enables 0 and unsigned integers to be packed efficiently into buffers.",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "ba11342a7e6437907c991a514468cb02ce3cde9c",
+    "tarball": "https://registry.npmjs.org/xas2/-/xas2-0.0.5.tgz"
+  },
+  "engines": {
+    "node": ">=6.5.0"
+  },
+  "gitHead": "7f6e18a66d7f02716f0b53b426ea9ce9423f0efc",
+  "homepage": "https://github.com/metabench/xas2#readme",
+  "license": "MIT",
+  "main": "xas2.js",
+  "maintainers": [
+    {
+      "name": "jvickers",
+      "email": "james@metabench.com"
+    }
+  ],
+  "name": "xas2",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/metabench/xas2.git"
+  },
+  "scripts": {},
+  "version": "0.0.8"
+}

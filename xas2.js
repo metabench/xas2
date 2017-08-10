@@ -3,7 +3,17 @@
  */
 
 
-// For unsigned integers
+// XAS2 encodes single pieces of data
+
+// For numeric data. String handling convers hex strings to numbers.
+//  Does not encode strings.
+
+
+// Best to keep XAS2 simple for that, and have something else to encode sequences of XAS2 or other data types.
+//  Could do further extensions to address space that allow string encoding.
+
+// For unsigned integers and 0
+// ---------------------------
 
 // XAS Extended Address Space technique                            XAS2
 //  Single byte value,
@@ -34,16 +44,17 @@ const max_2 = Math.pow(2, 16) + max_1;     // 252
 const max_3 = Math.pow(2, 32) + max_2;     // 253
 const max_4 = Math.pow(2, 48) + max_3;     // 254
 
+// Something to store a string, saying how long the string is as well?
+//  [str][xas2 number length][string itself in hex]
+
+// Could make xas3 
+
 
 /*
 console.log('max_1', max_1);
 console.log('max_2', max_2);
 console.log('max_3', max_3);
 console.log('max_4', max_4);
-
-
-
-
 
 console.log('     ', Number.MAX_SAFE_INTEGER, 'Number.MAX_SAFE_INTEGER');
 // The maximum safe integer is still a very large number
@@ -58,15 +69,83 @@ console.log(Math.pow(2, 48), '2^48');
 //  Could even use a higher number, 52 or 53 bits
 
 // For the moment, it looks like plenty can be done using JavaScript numbers.
+var is_array = Array.isArray;
 
+// An array of different values to put together as a buffer of xas2 encoded items?
+
+var tof = (obj, t1) => {
+    var res = t1 || typeof obj;
+
+    if (res === 'number' || res === 'string' || res === 'function' || res === 'boolean') {
+        return res;
+    }
+
+    if (res === 'object') {
+
+        if (typeof obj !== 'undefined') {
+
+            if (obj === null) {
+                return 'null';
+            }
+
+
+
+            //console.log('typeof obj ' + typeof obj);
+            //console.log('obj === null ' + (obj === null));
+
+            if (obj.__type) {
+                return obj.__type;
+            } else {
+                
+
+                // Inline array test, earlier on?
+
+                if (obj instanceof Date) {
+                    return 'date';
+                }
+
+
+                if (is_array(obj)) {
+                    //res = 'array';
+                    //return res;
+                    return 'array';
+                } else {
+
+                    if (obj instanceof RegExp) res = 'regex';
+
+                    // For running inside Node.
+                    //console.log('twin ' + typeof window);
+                    if (typeof window === 'undefined') {
+                        //console.log('obj.length ' + obj.length);
+                        if (obj instanceof Buffer) res = 'buffer';
+
+                        if (obj instanceof Stream.Readable) res = 'readable_stream';
+                        if (obj instanceof Stream.Writable) res = 'writable_stream';
+                    }
+
+
+                }
+                //console.log('res ' + res);
+                return res;
+
+            }
+        } else {
+            return 'undefined';
+        }
+
+    }
+
+    return res;
+};
 
 class XAS2 {
 	'constructor'(spec) {
 		var b;
-		var t_spec = typeof spec;
+		var t_spec = tof(spec);
 		if (t_spec === 'number') {
 			if (spec <= max_1) {
 				b = Buffer.alloc(1);
+				//console.log('spec', spec);
 				b.writeUInt8(spec, 0);
 			} else if (spec <= max_2) {
 				b = Buffer.alloc(3);
@@ -80,11 +159,22 @@ class XAS2 {
 				b = Buffer.alloc(7);
 				b.writeUInt8(254, 0);
 				b.writeUIntBE(spec - max_3, 1, 6);
-			}
+            }
+
+            // Looks like we never write the number 255.
+            //  That could be used for going into a further address space.
+            //  Could make xas3, which allows for strings to be encoded as well.
+            //   
+
+
 		}
 		if (t_spec === 'string') {
 			b = Buffer.from(spec, 'hex');
 		}
+		if (spec instanceof Buffer) {
+			b = spec;
+        }
+        
 		this._buffer = b;
 	}
 	get length() {
@@ -111,20 +201,77 @@ class XAS2 {
 
 }
 
+var xas2 = function (spec) {
+    var t_spec = tof(spec);
+
+    if (t_spec === 'array') {
+        var res = new Array(spec.length), total_length = 0;
+        spec.forEach((v, i) => {
+            res[i] = xas2(v).buffer;
+            total_length = total_length + res[i].length;
+        });
+        // then join all the buffers together?
+
+        var buf = Buffer.concat(res, total_length);
+        return buf;
+
+
+
+    } else {
+        return new XAS2(spec);
+    }
+
+
+	
+}
+xas2.XAS2 = XAS2;
+xas2.read = function(buffer, pos) {
+	//console.log('buffer.length', buffer.length);
+	//console.log('pos', pos);
+
+	var i8 = buffer.readUInt8(pos);
+	pos = pos + 1;
+	if (i8 <= max_1) {
+		return [i8, pos];
+	} else {
+		//console.log('i8', i8);
+		var res;
+		var i_res;
+
+		if (i8 === 252) {
+			i_res = buffer.readUInt16BE(pos) + max_1;
+			pos = pos + 2;
+		} else if (i8 === 253) {
+			i_res = buffer.readUInt32BE(pos) + max_2;
+			pos = pos + 4;
+		} else if (i8 === 254) {
+			i_res = buffer.readUIntBE(pos, 6) + max_3;
+			pos = pos + 6;
+		}
+
+		res = [i_res, pos];
+		return res;
+
+
+
+
+		//throw 'not yet supported';
+	}
+}
 
 if (require.main === module) {
 	var number = 252;
-	console.log('number', number);
+	//console.log('number', number);
 
 	var key1 = new XAS2(number);
-	console.log('key1.hex', key1.hex);
-	console.log('key1.length', key1.length);
+	//console.log('key1.hex', key1.hex);
+	//console.log('key1.length', key1.length);
 
-	var key2 = new XAS2(key1.hex);
-	console.log('key2.length', key1.length);
-	console.log('key2.number', key1.number);
+	var key2 = xas2(key1.hex);
+	//console.log('key2.length', key1.length);
+	//console.log('key2.number', key1.number);
 
-	console.log('key2.buffer', key2.buffer);
+	//console.log('key2.buffer', key2.buffer);
 
 
 
@@ -133,4 +280,9 @@ if (require.main === module) {
 	//console.log('required as a module');
 }
 
-module.exports = XAS2;
+// Make xas2 a function?
+//  no need to use new then, give it a number or hex string and it will construct.
+
+
+
+module.exports = xas2;
