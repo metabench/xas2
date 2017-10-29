@@ -39,10 +39,12 @@
 
 //console.log(251);
 
+// Bug fixes put in after failure and further testing.
+
 const max_1 = 251;
-const max_2 = Math.pow(2, 16) + max_1;     // 252
-const max_3 = Math.pow(2, 32) + max_2;     // 253
-const max_4 = Math.pow(2, 48) + max_3;     // 254
+const max_2 = Math.pow(2, 16) + max_1 - 1;     // 252
+const max_3 = Math.pow(2, 32) + max_2 - 1;     // 253
+const max_4 = Math.pow(2, 48) + max_3 - 1;     // 254
 
 // Something to store a string, saying how long the string is as well?
 //  [str][xas2 number length][string itself in hex]
@@ -51,10 +53,7 @@ const max_4 = Math.pow(2, 48) + max_3;     // 254
 
 
 /*
-console.log('max_1', max_1);
-console.log('max_2', max_2);
-console.log('max_3', max_3);
-console.log('max_4', max_4);
+
 
 console.log('     ', Number.MAX_SAFE_INTEGER, 'Number.MAX_SAFE_INTEGER');
 // The maximum safe integer is still a very large number
@@ -86,13 +85,8 @@ var tof = (obj, t1) => {
 
             if (obj === null) {
                 return 'null';
-            }
-
-
-
-            //console.log('typeof obj ' + typeof obj);
-            //console.log('obj === null ' + (obj === null));
-
+			}
+			
             if (obj.__type) {
                 return obj.__type;
             } else {
@@ -226,16 +220,30 @@ var xas2 = function (spec) {
 }
 xas2.XAS2 = XAS2;
 xas2.read = function(buffer, pos) {
+	var res;
+	if (arguments.length === 1) {
+		pos = 0;
+	}
+
 	//console.log('buffer.length', buffer.length);
 	//console.log('pos', pos);
+	//console.log('buffer', buffer);
 
 	var i8 = buffer.readUInt8(pos);
 	pos = pos + 1;
 	if (i8 <= max_1) {
-		return [i8, pos];
+
+		if (arguments.length === 1) {
+			res = i8;
+		} else {
+			res = [i8, pos];
+		}
+		//console.log('arguments.length', arguments.length);
+
+		
 	} else {
 		//console.log('i8', i8);
-		var res;
+		
 		var i_res;
 
 		if (i8 === 252) {
@@ -249,40 +257,81 @@ xas2.read = function(buffer, pos) {
 			pos = pos + 6;
 		}
 
-		res = [i_res, pos];
-		return res;
-
-
-
-
-		//throw 'not yet supported';
+		if (arguments.length === 1) {
+			res = i_res;
+		} else {
+			res = [i_res, pos];
+		}
+		//console.log('arguments.length', arguments.length);
+		
+		
 	}
+	return res;
 }
 
+// Single read of a value...
+
+
 if (require.main === module) {
-	var number = 252;
+	//var number = 252;
 	//console.log('number', number);
 
-	var key1 = new XAS2(number);
+	//var key1 = new XAS2(number);
 	//console.log('key1.hex', key1.hex);
 	//console.log('key1.length', key1.length);
 
-	var key2 = xas2(key1.hex);
+	//var key2 = xas2(key1.hex);
 	//console.log('key2.length', key1.length);
 	//console.log('key2.number', key1.number);
 
 	//console.log('key2.buffer', key2.buffer);
 
+	console.log('max_1', max_1);
+	console.log('max_2', max_2);
+	console.log('max_3', max_3);
+	console.log('max_4', max_4);
 
+	var max = Number.MAX_SAFE_INTEGER;
+	var x, b, n;
+	console.log('max', max);
 
+	// 4295033081
+	for (var c = 4295033000; c < max; c++) {
+		
+		try {
+			//console.log("entering try block");
+			//throw "thrown message";
+			x = xas2(c);
+			b = x.buffer;
+			n = xas2.read(b);
+
+			if (c !== n) {
+				console.log('c, n', c, n);
+				//throw 'stop';
+				process.abort();
+			} else {
+				//console.log('c', c);
+			}
+			
+			//console.log("this message is never seen");
+		}
+		catch (e) {
+			console.log("entering catch block");
+			console.log(e);
+			console.log('c', c);
+			console.log("leaving catch block");
+		}
+		finally {
+			//console.log("entering and leaving the finally block");
+		}
+	}
 
 } else {
 	//console.log('required as a module');
 }
 
+
 // Make xas2 a function?
 //  no need to use new then, give it a number or hex string and it will construct.
-
-
 
 module.exports = xas2;
