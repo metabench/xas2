@@ -49,21 +49,6 @@ const max_4 = Math.pow(2, 48) + max_3 - 1;     // 254
 // Something to store a string, saying how long the string is as well?
 //  [str][xas2 number length][string itself in hex]
 
-// Could make xas3 
-
-
-/*
-
-
-console.log('     ', Number.MAX_SAFE_INTEGER, 'Number.MAX_SAFE_INTEGER');
-// The maximum safe integer is still a very large number
-
-
-console.log(Math.pow(2, 32), '2^32');
-console.log(Math.pow(2, 48), '2^48');
-*/
-
-
 // We can make use of quite a lot of 48 bit keys using JavaScript numbers
 //  Could even use a higher number, 52 or 53 bits
 
@@ -113,8 +98,8 @@ var tof = (obj, t1) => {
                         //console.log('obj.length ' + obj.length);
                         if (obj instanceof Buffer) res = 'buffer';
 
-                        if (obj instanceof Stream.Readable) res = 'readable_stream';
-                        if (obj instanceof Stream.Writable) res = 'writable_stream';
+                        //if (obj instanceof Stream.Readable) res = 'readable_stream';
+                        //if (obj instanceof Stream.Writable) res = 'writable_stream';
                     }
 
 
