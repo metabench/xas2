@@ -14,18 +14,15 @@
   "homepage": "https://github.com/metabench/xas2#readme",
   "license": "MIT",
   "main": "xas2.js",
-  "maintainers": [
-    {
-      "name": "jvickers",
-      "email": "james@metabench.com"
-    }
-  ],
+  "maintainers": [{
+    "name": "jvickers",
+    "email": "james@metabench.com"
+  }],
   "name": "xas2",
-  "readme": "ERROR: No README data found!",
   "repository": {
     "type": "git",
     "url": "https://github.com/metabench/xas2.git"
   },
   "scripts": {},
-  "version": "0.0.11"
+  "version": "0.0.12"
 }

@@ -42,9 +42,9 @@
 // Bug fixes put in after failure and further testing.
 
 const max_1 = 251;
-const max_2 = Math.pow(2, 16) + max_1 - 1;     // 252
-const max_3 = Math.pow(2, 32) + max_2 - 1;     // 253
-const max_4 = Math.pow(2, 48) + max_3 - 1;     // 254
+const max_2 = Math.pow(2, 16) + max_1 - 1; // 252
+const max_3 = Math.pow(2, 32) + max_2 - 1; // 253
+const max_4 = Math.pow(2, 48) + max_3 - 1; // 254
 
 // Something to store a string, saying how long the string is as well?
 //  [str][xas2 number length][string itself in hex]
@@ -58,67 +58,45 @@ var is_array = Array.isArray;
 // An array of different values to put together as a buffer of xas2 encoded items?
 
 var tof = (obj, t1) => {
-    var res = t1 || typeof obj;
+	var res = t1 || typeof obj;
 
-    if (res === 'number' || res === 'string' || res === 'function' || res === 'boolean') {
-        return res;
-    }
+	if (res === 'number' || res === 'string' || res === 'function' || res === 'boolean') {
+		return res;
+	}
 
-    if (res === 'object') {
+	if (res === 'object') {
 
-        if (typeof obj !== 'undefined') {
+		if (typeof obj !== 'undefined') {
 
-            if (obj === null) {
-                return 'null';
+			if (obj === null) {
+				return 'null';
 			}
-			
-            if (obj.__type) {
-                return obj.__type;
-            } else {
-                
 
-                // Inline array test, earlier on?
-
-                if (obj instanceof Date) {
-                    return 'date';
-                }
-
-
-                if (is_array(obj)) {
-                    //res = 'array';
-                    //return res;
-                    return 'array';
-                } else {
-
-                    if (obj instanceof RegExp) res = 'regex';
-
-                    // For running inside Node.
-                    //console.log('twin ' + typeof window);
-                    if (typeof window === 'undefined') {
-                        //console.log('obj.length ' + obj.length);
-                        if (obj instanceof Buffer) res = 'buffer';
-
-                        //if (obj instanceof Stream.Readable) res = 'readable_stream';
-                        //if (obj instanceof Stream.Writable) res = 'writable_stream';
-                    }
-
-
-                }
-                //console.log('res ' + res);
-                return res;
-
-            }
-        } else {
-            return 'undefined';
-        }
-
-    }
-
-    return res;
+			if (obj.__type) {
+				return obj.__type;
+			} else {
+				if (obj instanceof Date) {
+					return 'date';
+				}
+				if (is_array(obj)) {
+					return 'array';
+				} else {
+					if (obj instanceof RegExp) res = 'regex';
+					if (typeof window === 'undefined') {
+						if (obj instanceof Buffer) res = 'buffer';
+					}
+				}
+				return res;
+			}
+		} else {
+			return 'undefined';
+		}
+	}
+	return res;
 };
 
 class XAS2 {
-	'constructor'(spec) {
+	'constructor' (spec) {
 		var b;
 		var t_spec = tof(spec);
 		if (t_spec === 'number') {
@@ -138,22 +116,18 @@ class XAS2 {
 				b = Buffer.alloc(7);
 				b.writeUInt8(254, 0);
 				b.writeUIntBE(spec - max_3, 1, 6);
-            }
-
-            // Looks like we never write the number 255.
-            //  That could be used for going into a further address space.
-            //  Could make xas3, which allows for strings to be encoded as well.
-            //   
-
-
+			}
+			// Looks like we never write the number 255.
+			//  That could be used for going into a further address space.
+			//  Could make xas3, which allows for strings to be encoded as well.
+			//   
 		}
 		if (t_spec === 'string') {
 			b = Buffer.from(spec, 'hex');
 		}
 		if (spec instanceof Buffer) {
 			b = spec;
-        }
-        
+		}
 		this._buffer = b;
 	}
 	get length() {
@@ -163,7 +137,8 @@ class XAS2 {
 		return this._buffer.toString('hex');
 	}
 	get number() {
-		var l = this.length, b = this._buffer;
+		var l = this.length,
+			b = this._buffer;
 		if (l === 1) {
 			return b.readUInt8(0);
 		} else if (l === 3) {
@@ -177,43 +152,31 @@ class XAS2 {
 	get buffer() {
 		return this._buffer;
 	}
-
 }
 
 var xas2 = function (spec) {
-    var t_spec = tof(spec);
+	var t_spec = tof(spec);
 
-    if (t_spec === 'array') {
-        var res = new Array(spec.length), total_length = 0;
-        spec.forEach((v, i) => {
-            res[i] = xas2(v).buffer;
-            total_length = total_length + res[i].length;
-        });
-        // then join all the buffers together?
+	if (t_spec === 'array') {
+		var res = new Array(spec.length),
+			total_length = 0;
+		spec.forEach((v, i) => {
+			res[i] = xas2(v).buffer;
+			total_length = total_length + res[i].length;
+		});
+		var buf = Buffer.concat(res, total_length);
+		return buf;
 
-        var buf = Buffer.concat(res, total_length);
-        return buf;
-
-
-
-    } else {
-        return new XAS2(spec);
-    }
-
-
-	
+	} else {
+		return new XAS2(spec);
+	}
 }
 xas2.XAS2 = XAS2;
-xas2.read = function(buffer, pos) {
+xas2.read = function (buffer, pos) {
 	var res;
 	if (arguments.length === 1) {
 		pos = 0;
 	}
-
-	//console.log('buffer.length', buffer.length);
-	//console.log('pos', pos);
-	//console.log('buffer', buffer);
-
 	var i8 = buffer.readUInt8(pos);
 	pos = pos + 1;
 	if (i8 <= max_1) {
@@ -223,14 +186,8 @@ xas2.read = function(buffer, pos) {
 		} else {
 			res = [i8, pos];
 		}
-		//console.log('arguments.length', arguments.length);
-
-		
 	} else {
-		//console.log('i8', i8);
-		
 		var i_res;
-
 		if (i8 === 252) {
 			i_res = buffer.readUInt16BE(pos) + max_1;
 			pos = pos + 2;
@@ -247,29 +204,14 @@ xas2.read = function(buffer, pos) {
 		} else {
 			res = [i_res, pos];
 		}
-		//console.log('arguments.length', arguments.length);
-		
-		
 	}
 	return res;
 }
 
-// Single read of a value...
-
-
 if (require.main === module) {
 	//var number = 252;
-	//console.log('number', number);
-
 	//var key1 = new XAS2(number);
-	//console.log('key1.hex', key1.hex);
-	//console.log('key1.length', key1.length);
-
 	//var key2 = xas2(key1.hex);
-	//console.log('key2.length', key1.length);
-	//console.log('key2.number', key1.number);
-
-	//console.log('key2.buffer', key2.buffer);
 
 	console.log('max_1', max_1);
 	console.log('max_2', max_2);
@@ -282,39 +224,29 @@ if (require.main === module) {
 
 	// 4295033081
 	for (var c = 4295033000; c < max; c++) {
-		
 		try {
-			//console.log("entering try block");
-			//throw "thrown message";
 			x = xas2(c);
 			b = x.buffer;
 			n = xas2.read(b);
 
 			if (c !== n) {
 				console.log('c, n', c, n);
-				//throw 'stop';
 				process.abort();
 			} else {
 				//console.log('c', c);
 			}
-			
-			//console.log("this message is never seen");
-		}
-		catch (e) {
+		} catch (e) {
 			console.log("entering catch block");
 			console.log(e);
 			console.log('c', c);
 			console.log("leaving catch block");
-		}
-		finally {
+		} finally {
 			//console.log("entering and leaving the finally block");
 		}
 	}
-
 } else {
 	//console.log('required as a module');
 }
-
 
 // Make xas2 a function?
 //  no need to use new then, give it a number or hex string and it will construct.
