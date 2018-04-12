@@ -174,9 +174,11 @@ var xas2 = function (spec) {
 xas2.XAS2 = XAS2;
 xas2.read = function (buffer, pos) {
 	var res;
+	var buffer_length;
 	if (arguments.length === 1) {
 		pos = 0;
 	}
+	pos = pos || 0;
 	var i8 = buffer.readUInt8(pos);
 	pos = pos + 1;
 	if (i8 <= max_1) {
@@ -186,26 +188,96 @@ xas2.read = function (buffer, pos) {
 		} else {
 			res = [i8, pos];
 		}
+		buffer_length = 1;
 	} else {
 		var i_res;
 		if (i8 === 252) {
 			i_res = buffer.readUInt16BE(pos) + max_1;
 			pos = pos + 2;
+			buffer_length = 3;
 		} else if (i8 === 253) {
 			i_res = buffer.readUInt32BE(pos) + max_2;
 			pos = pos + 4;
+			buffer_length = 5;
 		} else if (i8 === 254) {
 			i_res = buffer.readUIntBE(pos, 6) + max_3;
 			pos = pos + 6;
+			buffer_length = 7;
 		}
 
 		if (arguments.length === 1) {
 			res = i_res;
 		} else {
-			res = [i_res, pos];
+			res = [i_res, pos, buffer_length];
 		}
 	}
 	return res;
+}
+
+// xas2.skip could be useful for an optimization where the value is not needed.
+
+xas2.skip = function (buffer, pos) {
+	var res;
+	if (arguments.length === 1) {
+		throw 'err'
+	}
+	var i8 = buffer.readUInt8(pos);
+	pos = pos + 1;
+	if (i8 <= max_1) {
+		res = [0, pos];
+	} else {
+		if (i8 === 252) {
+			pos = pos + 2;
+		} else if (i8 === 253) {
+			pos = pos + 4;
+		} else if (i8 === 254) {
+			pos = pos + 6;
+		}
+	}
+	return [0, pos];;
+}
+
+
+
+
+xas2.read_buffer = (buffer, pos) => {
+
+	// Need to write that it is xas2 data type?
+	//  That's only when it's encoded within something else I think.
+
+	if (arguments.length === 1) {
+		throw 'err'
+	}
+	var i8 = buffer.readUInt8(pos);
+	pos = pos + 1;
+
+	let res;
+
+	if (i8 <= max_1) {
+		//res = [0, pos];
+		res = Buffer.alloc(1);
+		res.writeUInt8(i8, 0);
+	} else {
+		if (i8 === 252) {
+			res = Buffer.alloc(3);
+			res.writeUInt8(252, 0);
+			buffer.copy(res, 1, 1);
+			pos = pos + 2;
+
+		} else if (i8 === 253) {
+			res = Buffer.alloc(5);
+			res.writeUInt8(253, 0);
+			buffer.copy(res, 1, 1);
+			pos = pos + 4;
+		} else if (i8 === 254) {
+			res = Buffer.alloc(7);
+			res.writeUInt8(254, 0);
+			buffer.copy(res, 1, 1);
+			pos = pos + 6;
+		}
+	}
+	return [res, pos];;
+
 }
 
 if (require.main === module) {
@@ -221,6 +293,13 @@ if (require.main === module) {
 	var max = Number.MAX_SAFE_INTEGER;
 	var x, b, n;
 	console.log('max', max);
+
+	b = xas2(253).buffer;
+	n = xas2.read(b);
+	console.log('n', n);
+
+
+	/*
 
 	// 4295033081
 	for (var c = 4295033000; c < max; c++) {
@@ -244,6 +323,7 @@ if (require.main === module) {
 			//console.log("entering and leaving the finally block");
 		}
 	}
+	*/
 } else {
 	//console.log('required as a module');
 }
