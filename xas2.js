@@ -152,6 +152,10 @@ class XAS2 {
 	get buffer() {
 		return this._buffer;
 	}
+	write(buffer, pos = 0) {
+		this._buffer.copy(buffer, pos);
+		return pos + this._buffer.length;
+	}
 }
 
 var xas2 = function (spec) {
@@ -213,6 +217,8 @@ xas2.read = function (buffer, pos) {
 	}
 	return res;
 }
+
+
 
 // xas2.skip could be useful for an optimization where the value is not needed.
 
