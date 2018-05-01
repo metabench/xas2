@@ -218,7 +218,18 @@ xas2.read = function (buffer, pos) {
 	return res;
 }
 
-
+xas2.read_nth = function (buffer, pos, n) {
+	let c = 0,
+		res;
+	while (c < n - 1) {
+		//console.log('skip');
+		pos = xas2.skip(buffer, pos)[1];
+		//console.log('pos', pos);
+		c++;
+	}
+	[res, pos] = xas2.read(buffer, pos);
+	return res;
+}
 
 // xas2.skip could be useful for an optimization where the value is not needed.
 
@@ -243,6 +254,18 @@ xas2.skip = function (buffer, pos) {
 	return [0, pos];;
 }
 
+xas2.skip_n = function (buffer, pos, n) {
+	let c = 0;
+	while (c < n) {
+		pos = xas2.skip(buffer, pos)[1];
+		c++;
+	}
+	return pos;
+}
+
+
+
+// read nth, dont return pos
 
 
 
@@ -285,6 +308,8 @@ xas2.read_buffer = (buffer, pos) => {
 	return [res, pos];;
 
 }
+
+
 
 if (require.main === module) {
 	//var number = 252;
